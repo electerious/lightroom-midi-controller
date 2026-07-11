@@ -1,0 +1,34 @@
+{
+  "name": "lightroom-midi-controller",
+  "version": "1.0.0",
+  "description": "Control Adobe Lightroom CC using a MIDI controller",
+  "repository": "electerious/lightroom-midi-controller",
+  "license": "MIT",
+  "type": "module",
+  "main": "./bin/index.js",
+  "bin": "./bin/index.js",
+  "files": [
+    "bin",
+    "src"
+  ],
+  "scripts": {
+    "eslint": "eslint \"**/*.js\"",
+    "format": "npm run eslint -- --fix && npm run prettier -- --write",
+    "lint": "npm run eslint && npm run prettier -- --check",
+    "prettier": "prettier --ignore-path .gitignore \"**/*.{js,json,md,yml}\"",
+    "start": "./bin/index.js",
+    "test": "npm run lint && node --test \"tests/**/*.js\""
+  },
+  "dependencies": {
+    "commander": "^14.0.3",
+    "easymidi": "^3.2.0",
+    "prompts": "^2.4.2",
+    "ws": "^8.21.0"
+  },
+  "devDependencies": {
+    "@electerious/eslint-config": "^5.4.0",
+    "@electerious/prettier-config": "^4.0.2",
+    "eslint": "^9.39.4",
+    "prettier": "^3.9.4"
+  }
+}
