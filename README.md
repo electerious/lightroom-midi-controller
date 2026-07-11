@@ -2,7 +2,7 @@
 
 [![Test](https://github.com/electerious/lightroom-midi-controller/actions/workflows/test.yml/badge.svg)](https://github.com/electerious/lightroom-midi-controller/actions/workflows/test.yml)
 
-Control Adobe Lightroom CC using a MIDI controller. Map knobs to parameter adjustments and buttons to actions, then edit photos without touching your mouse or keyboard.
+Control Adobe Lightroom using a MIDI controller. Map knobs to parameter adjustments and buttons to actions, then edit photos without touching your mouse or keyboard.
 
 > 💡 This project is not affiliated with Adobe Systems Incorporated in any way. It is an independent tool that connects MIDI hardware to the Lightroom External Controller API.
 
@@ -18,7 +18,7 @@ Control Adobe Lightroom CC using a MIDI controller. Map knobs to parameter adjus
 
 ## Description
 
-`lightroom-midi-controller` bridges MIDI hardware and Adobe Lightroom CC by translating MIDI events into Lightroom adjustments over WebSocket. Turn a knob on your controller to increase exposure, press a button to jump to the next photo — all without touching your mouse or keyboard.
+`lightroom-midi-controller` bridges MIDI hardware and Adobe Lightroom by translating MIDI events into Lightroom adjustments over WebSocket. Turn a knob on your controller to increase exposure, press a button to jump to the next photo — all without touching your mouse or keyboard.
 
 The tool listens for MIDI CC (continuous control) and NOTE ON events from a configured device. When a mapped control is turned or pressed, the corresponding action is sent to Lightroom through its External Controller API. An interactive setup wizard guides you through mapping every knob and button, so no manual config editing is required.
 
@@ -26,7 +26,7 @@ Using the External Controller API directly would require handling WebSocket conn
 
 ## Requirements
 
-- Adobe Lightroom CC (v8.4 or newer)
+- Adobe Lightroom (v8.4 or newer)
 - [Node.js](https://nodejs.org/en/) (v22 or newer)
 - [npm](https://npmjs.com) (v10 or newer)
 - A MIDI controller with knobs, buttons, or both
@@ -35,7 +35,7 @@ Using the External Controller API directly would require handling WebSocket conn
 
 ### 1. Start Lightroom CC
 
-Launch Adobe Lightroom CC on your computer.
+Launch Adobe Lightroom on your computer.
 
 ### 2. Enable the External Controller API
 

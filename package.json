@@ -1,11 +1,23 @@
 {
   "name": "lightroom-midi-controller",
   "version": "1.0.0",
-  "description": "Control Adobe Lightroom CC using a MIDI controller",
-  "repository": "electerious/lightroom-midi-controller",
+  "description": "Control Adobe Lightroom using a MIDI controller",
+  "keywords": [
+    "lightroom",
+    "creative-cloud",
+    "controller",
+    "midi",
+    "midi-controller",
+    "websocket",
+    "adobe"
+  ],
+  "homepage": "https://github.com/electerious/lightroom-midi-controller",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/electerious/lightroom-midi-controller.git"
+  },
   "license": "MIT",
   "type": "module",
-  "main": "./bin/index.js",
   "bin": "./bin/index.js",
   "files": [
     "bin",
@@ -30,5 +42,8 @@
     "@electerious/prettier-config": "^4.0.2",
     "eslint": "^9.39.4",
     "prettier": "^3.9.4"
-  }
+  },
+  "authors": [
+    "Tobias Reich <tobias@electerious.com>"
+  ]
 }
