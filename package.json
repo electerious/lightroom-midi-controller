@@ -1,6 +1,6 @@
 {
   "name": "lightroom-midi-controller",
-  "version": "0.0.0",
+  "version": "1.0.0",
   "description": "Control Adobe Lightroom using a MIDI controller",
   "keywords": [
     "lightroom",
