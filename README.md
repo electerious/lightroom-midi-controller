@@ -525,6 +525,10 @@ If your controller has an LED ring or motorized fader that can receive MIDI CC m
 
 Crop parameters (`cropTop`, `cropLeft`, `cropBottom`, `cropRight`) cannot be adjusted via `increment`/`decrement`. This is a limitation of Adobe's controller API and affects at least Lightroom CC 8.4 on Windows.
 
+### Related
+
+- [lightroom-controller](https://github.com/electerious/lightroom-controller) - HTTP server for controlling Lightroom.
+
 ### Donate
 
 I am working hard on continuously developing and maintaining my projects. Please consider making a donation to keep the project going strong and me motivated.
