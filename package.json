@@ -31,7 +31,7 @@
     "lint": "npm run eslint && npm run prettier -- --check",
     "prettier": "prettier --ignore-path .gitignore \"**/*.{js,json,md,yml}\"",
     "start": "./bin/index.js",
-    "test": "npm run lint && node --test \"tests/**/*.js\""
+    "test": "npm run lint && node --test"
   },
   "dependencies": {
     "commander": "^14.0.3",
@@ -44,6 +44,9 @@
     "@electerious/prettier-config": "^4.0.2",
     "eslint": "^10.8.1",
     "prettier": "^3.9.4"
+  },
+  "engines": {
+    "node": ">=24.15.0"
   },
   "authors": [
     "Tobias Reich <tobias@electerious.com>"
