@@ -292,7 +292,7 @@ const promptForAmount = async (adjustment) => {
     message: `Step amount for ${adjustment.label}`,
     initial: String(adjustment.defaultAmount),
     validate: (value) => {
-      const parsed = Number.parseFloat(value)
+      const parsed = Number(value)
 
       return !Number.isNaN(parsed) && parsed > 0 ? true : 'Must be a positive number'
     },
@@ -300,7 +300,7 @@ const promptForAmount = async (adjustment) => {
 
   if (amount === undefined) return null
 
-  return Number.parseFloat(amount)
+  return Number(amount)
 }
 
 const captureKnob = async (input, mappings, adjustment, knobType, signal) => {
@@ -475,28 +475,22 @@ const mapParameters = async (input, mappings, getSignal) => {
     if (method === undefined) return false
     if (method === 'back') continue
 
+    const signal = getSignal()
+    let result
+
     if (method === 'knob_relative' || method === 'knob_absolute') {
       const knobType = method === 'knob_relative' ? 'cc_relative' : 'cc_absolute'
-      const signal = getSignal()
-      const result = await captureKnob(input, mappings, adjustment, knobType, signal)
-
-      if (result === null) {
-        if (signal.aborted) continue
-        return false
-      }
-
-      mappings.push(result)
+      result = await captureKnob(input, mappings, adjustment, knobType, signal)
     } else {
-      const signal = getSignal()
-      const result = await captureNotePair(input, mappings, adjustment, signal)
-
-      if (result === null) {
-        if (signal.aborted) continue
-        return false
-      }
-
-      mappings.push(result)
+      result = await captureNotePair(input, mappings, adjustment, signal)
     }
+
+    if (result === null) {
+      if (signal.aborted) continue
+      return false
+    }
+
+    mappings.push(result)
 
     remaining.splice(remaining.indexOf(adjustment), 1)
   }

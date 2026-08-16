@@ -12,13 +12,13 @@ const parseEnv = (env) => {
     if (parts.length < 4) continue
 
     const type = parts[0].trim().toLowerCase()
-    const channel = Number.parseInt(parts[1].trim(), 10)
-    const control = Number.parseInt(parts[2].trim(), 10)
+    const channel = Number(parts[1].trim())
+    const control = Number(parts[2].trim())
 
     switch (type) {
       case 'cc_relative':
       case 'cc_absolute': {
-        const amount = Number.parseFloat(parts[3].trim())
+        const amount = Number(parts[3].trim())
         const parameter = parts[4] ? parts[4].trim() : null
 
         if (parameter === null) continue
@@ -39,8 +39,8 @@ const parseEnv = (env) => {
       case 'note_adjust': {
         if (parts.length < 6) continue
 
-        const controlAlternate = Number.parseInt(parts[3].trim(), 10)
-        const amount = Number.parseFloat(parts[4].trim())
+        const controlAlternate = Number(parts[3].trim())
+        const amount = Number(parts[4].trim())
 
         if (Number.isNaN(controlAlternate) || Number.isNaN(amount)) continue
 
