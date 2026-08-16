@@ -1,6 +1,44 @@
 const CC_DIRECTION_INCREMENT = 1
 const CC_DIRECTION_DECREMENT = 2
 
+const parseMapping = (type, parts, channel, control) => {
+  switch (type) {
+    case 'cc_relative':
+    case 'cc_absolute': {
+      const amount = Number(parts[3].trim())
+      const parameter = parts[4] ? parts[4].trim() : null
+
+      if (parameter === null) return null
+
+      return { type, channel, control, parameter, amount }
+    }
+    case 'note_on': {
+      const action = parts[4] ? parts[4].trim() : null
+
+      if (action === null) return null
+
+      return { type, channel, control, action }
+    }
+    case 'note_adjust': {
+      if (parts.length < 6) return null
+
+      const controlAlternate = Number(parts[3].trim())
+      const amount = Number(parts[4].trim())
+
+      if (Number.isNaN(controlAlternate) || Number.isNaN(amount)) return null
+
+      const parameter = parts[5] ? parts[5].trim() : null
+
+      if (parameter === null) return null
+
+      return { type, channel, control, controlAlternate, parameter, amount }
+    }
+    default: {
+      return null
+    }
+  }
+}
+
 const parseEnv = (env) => {
   const mappings = []
 
@@ -14,48 +52,9 @@ const parseEnv = (env) => {
     const type = parts[0].trim().toLowerCase()
     const channel = Number(parts[1].trim())
     const control = Number(parts[2].trim())
+    const mapping = parseMapping(type, parts, channel, control)
 
-    switch (type) {
-      case 'cc_relative':
-      case 'cc_absolute': {
-        const amount = Number(parts[3].trim())
-        const parameter = parts[4] ? parts[4].trim() : null
-
-        if (parameter === null) continue
-
-        mappings.push({ type, channel, control, parameter, amount })
-
-        break
-      }
-      case 'note_on': {
-        const action = parts[4] ? parts[4].trim() : null
-
-        if (action === null) continue
-
-        mappings.push({ type, channel, control, action })
-
-        break
-      }
-      case 'note_adjust': {
-        if (parts.length < 6) continue
-
-        const controlAlternate = Number(parts[3].trim())
-        const amount = Number(parts[4].trim())
-
-        if (Number.isNaN(controlAlternate) || Number.isNaN(amount)) continue
-
-        const parameter = parts[5] ? parts[5].trim() : null
-
-        if (parameter === null) continue
-
-        mappings.push({ type, channel, control, controlAlternate, parameter, amount })
-
-        break
-      }
-      default: {
-        break
-      }
-    }
+    if (mapping !== null) mappings.push(mapping)
   }
 
   return mappings

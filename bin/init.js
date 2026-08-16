@@ -344,58 +344,53 @@ const captureKnob = async (input, mappings, adjustment, knobType, signal) => {
   }
 }
 
+const captureIncreaseNote = async (input, mappings, signal) => {
+  while (true) {
+    console.log('Press the INCREASE button...')
+    const eventData = await waitForMidiEvent(input, 'noteon', signal)
+
+    if (isNoteDuplicate(mappings, eventData.channel, eventData.note)) {
+      console.log(`Note ${eventData.note} on channel ${eventData.channel} is already in use. Try a different button.`)
+      continue
+    }
+
+    console.log(`Captured increase: note ${eventData.note} on channel ${eventData.channel}`)
+
+    return eventData
+  }
+}
+
+const captureDecreaseNote = async (input, mappings, increaseNote, signal) => {
+  while (true) {
+    console.log('Press the DECREASE button...')
+    const eventData = await waitForMidiEvent(input, 'noteon', signal)
+
+    if (eventData.channel !== increaseNote.channel) {
+      console.log(`Decrease button must be on channel ${increaseNote.channel} (same as increase). Try again.`)
+      continue
+    }
+
+    if (eventData.note === increaseNote.note) {
+      console.log('Decrease button must be different from increase button. Try again.')
+      continue
+    }
+
+    if (isNoteDuplicate(mappings, eventData.channel, eventData.note)) {
+      console.log(`Note ${eventData.note} on channel ${eventData.channel} is already in use. Try a different button.`)
+      continue
+    }
+
+    console.log(`Captured decrease: note ${eventData.note} on channel ${eventData.channel}`)
+
+    return eventData
+  }
+}
+
 const captureNotePair = async (input, mappings, adjustment, signal) => {
   try {
     while (true) {
-      let increaseNote
-
-      while (true) {
-        console.log('Press the INCREASE button...')
-        const eventData = await waitForMidiEvent(input, 'noteon', signal)
-
-        if (isNoteDuplicate(mappings, eventData.channel, eventData.note)) {
-          console.log(
-            `Note ${eventData.note} on channel ${eventData.channel} is already in use. Try a different button.`,
-          )
-          continue
-        }
-
-        increaseNote = eventData
-
-        console.log(`Captured increase: note ${increaseNote.note} on channel ${increaseNote.channel}`)
-
-        break
-      }
-
-      let decreaseNote
-
-      while (true) {
-        console.log('Press the DECREASE button...')
-        const eventData = await waitForMidiEvent(input, 'noteon', signal)
-
-        if (eventData.channel !== increaseNote.channel) {
-          console.log(`Decrease button must be on channel ${increaseNote.channel} (same as increase). Try again.`)
-          continue
-        }
-
-        if (eventData.note === increaseNote.note) {
-          console.log('Decrease button must be different from increase button. Try again.')
-          continue
-        }
-
-        if (isNoteDuplicate(mappings, eventData.channel, eventData.note)) {
-          console.log(
-            `Note ${eventData.note} on channel ${eventData.channel} is already in use. Try a different button.`,
-          )
-          continue
-        }
-
-        decreaseNote = eventData
-
-        console.log(`Captured decrease: note ${decreaseNote.note} on channel ${decreaseNote.channel}`)
-
-        break
-      }
+      const increaseNote = await captureIncreaseNote(input, mappings, signal)
+      const decreaseNote = await captureDecreaseNote(input, mappings, increaseNote, signal)
 
       const { confirmed } = await prompts({
         type: 'confirm',
@@ -498,6 +493,30 @@ const mapParameters = async (input, mappings, getSignal) => {
   return true
 }
 
+const captureAction = async (input, mappings, signal) => {
+  while (true) {
+    console.log('Waiting for button press...')
+    const eventData = await waitForMidiEvent(input, 'noteon', signal)
+
+    if (isNoteDuplicate(mappings, eventData.channel, eventData.note)) {
+      console.log(`Note ${eventData.note} on channel ${eventData.channel} is already in use. Try a different button.`)
+      continue
+    }
+
+    const { confirmed } = await prompts({
+      type: 'confirm',
+      name: 'confirmed',
+      message: `Captured note ${eventData.note} on channel ${eventData.channel}. Confirm?`,
+      initial: true,
+    })
+
+    if (confirmed === undefined) return null
+    if (!confirmed) continue
+
+    return eventData
+  }
+}
+
 const mapActions = async (input, mappings, getSignal) => {
   const remaining = [...ACTIONS]
 
@@ -511,33 +530,13 @@ const mapActions = async (input, mappings, getSignal) => {
     const signal = getSignal()
 
     try {
-      while (true) {
-        console.log('Waiting for button press...')
-        eventData = await waitForMidiEvent(input, 'noteon', signal)
-
-        if (isNoteDuplicate(mappings, eventData.channel, eventData.note)) {
-          console.log(
-            `Note ${eventData.note} on channel ${eventData.channel} is already in use. Try a different button.`,
-          )
-          continue
-        }
-
-        const { confirmed } = await prompts({
-          type: 'confirm',
-          name: 'confirmed',
-          message: `Captured note ${eventData.note} on channel ${eventData.channel}. Confirm?`,
-          initial: true,
-        })
-
-        if (confirmed === undefined) return false
-        if (!confirmed) continue
-
-        break
-      }
+      eventData = await captureAction(input, mappings, signal)
     } catch (error) {
       if (error.name === 'AbortError') continue
       throw error
     }
+
+    if (eventData === null) return false
 
     mappings.push({
       type: 'note_on',
@@ -552,6 +551,23 @@ const mapActions = async (input, mappings, getSignal) => {
   return true
 }
 
+const formatMapping = (index, mapping) => {
+  switch (mapping.type) {
+    case 'cc_relative': {
+      return `MIDI_MAP_${index + 1}=CC_RELATIVE,${mapping.channel},${mapping.control},${mapping.amount.toFixed(2)},${mapping.parameter}`
+    }
+    case 'cc_absolute': {
+      return `MIDI_MAP_${index + 1}=CC_ABSOLUTE,${mapping.channel},${mapping.control},${mapping.amount.toFixed(2)},${mapping.parameter}`
+    }
+    case 'note_adjust': {
+      return `MIDI_MAP_${index + 1}=NOTE_ADJUST,${mapping.channel},${mapping.control},${mapping.controlAlternate},${mapping.amount.toFixed(2)},${mapping.parameter}`
+    }
+    default: {
+      return `MIDI_MAP_${index + 1}=NOTE_ON,${mapping.channel},${mapping.control},,${mapping.action}`
+    }
+  }
+}
+
 const generateEnvContent = (inputDevice, webSocketUrl, outputDevice, mappings) => {
   const lines = [`MIDI_INPUT_DEVICE=${inputDevice}`, `LIGHTROOM_WS_URL=${webSocketUrl}`]
 
@@ -560,30 +576,7 @@ const generateEnvContent = (inputDevice, webSocketUrl, outputDevice, mappings) =
   }
 
   for (const [index, mapping] of mappings.entries()) {
-    switch (mapping.type) {
-      case 'cc_relative': {
-        lines.push(
-          `MIDI_MAP_${index + 1}=CC_RELATIVE,${mapping.channel},${mapping.control},${mapping.amount.toFixed(2)},${mapping.parameter}`,
-        )
-        break
-      }
-      case 'cc_absolute': {
-        lines.push(
-          `MIDI_MAP_${index + 1}=CC_ABSOLUTE,${mapping.channel},${mapping.control},${mapping.amount.toFixed(2)},${mapping.parameter}`,
-        )
-        break
-      }
-      case 'note_adjust': {
-        lines.push(
-          `MIDI_MAP_${index + 1}=NOTE_ADJUST,${mapping.channel},${mapping.control},${mapping.controlAlternate},${mapping.amount.toFixed(2)},${mapping.parameter}`,
-        )
-        break
-      }
-      default: {
-        lines.push(`MIDI_MAP_${index + 1}=NOTE_ON,${mapping.channel},${mapping.control},,${mapping.action}`)
-        break
-      }
-    }
+    lines.push(formatMapping(index, mapping))
   }
 
   return lines.join('\n') + '\n'
